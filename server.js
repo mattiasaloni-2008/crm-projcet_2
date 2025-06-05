@@ -499,12 +499,21 @@ app.post('/api/knowledge', async (req, res) => {
   let prezzo = '', consegna = '', domande = '', categorie = '', finiture = '', domande_finali = '';
   try {
     if (tipo === 'arredo') {
-      categorie = JSON.stringify(req.body.categorie || []);
+      categorie = JSON.stringify((req.body.categorie || []).map(cat => ({
+        titolo: cat.titolo,
+        descrizione: cat.descrizione,
+        domande: cat.domande || []
+      })));
     } else {
       categorie = JSON.stringify([]);
     }
     if (tipo === "complemento d'arredo") {
-      finiture = JSON.stringify(req.body.finiture || []);
+      finiture = JSON.stringify((req.body.finiture || []).map(fin => ({
+        titolo: fin.titolo,
+        descrizione: fin.descrizione,
+        prezzo: fin.prezzo,
+        domande: fin.domande || []
+      })));
     } else {
       finiture = JSON.stringify([]);
     }
@@ -533,12 +542,21 @@ app.put('/api/knowledge/:id', async (req, res) => {
   let prezzo = '', consegna = '', domande = '', categorie = '', finiture = '', domande_finali = '';
   try {
     if (tipo === 'arredo') {
-      categorie = JSON.stringify(req.body.categorie || []);
+      categorie = JSON.stringify((req.body.categorie || []).map(cat => ({
+        titolo: cat.titolo,
+        descrizione: cat.descrizione,
+        domande: cat.domande || []
+      })));
     } else {
       categorie = JSON.stringify([]);
     }
     if (tipo === "complemento d'arredo") {
-      finiture = JSON.stringify(req.body.finiture || []);
+      finiture = JSON.stringify((req.body.finiture || []).map(fin => ({
+        titolo: fin.titolo,
+        descrizione: fin.descrizione,
+        prezzo: fin.prezzo,
+        domande: fin.domande || []
+      })));
     } else {
       finiture = JSON.stringify([]);
     }

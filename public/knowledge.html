@@ -662,7 +662,7 @@
                 <div class="category-item">
                   <div class="item-header"><span class="item-title">${cat.titolo}</span></div>
                   <div class="item-content">${cat.descrizione || ''}</div>
-                  ${cat.questions && cat.questions.length > 0 ? `<div class="item-questions"><small>Domande: ${cat.questions.join(', ')}</small></div>` : ''}
+                  ${cat.domande && cat.domande.length > 0 ? `<div class="item-questions"><small>Domande: ${cat.domande.join(', ')}</small></div>` : ''}
                 </div>
               `).join('')}
             </div>
@@ -680,7 +680,7 @@
                 <div class="finish-item">
                   <div class="item-header"><span class="item-title">${fin.titolo}</span>${fin.prezzo ? `<span class="item-price" style='color:#2ecc71;margin-left:10px;'>${fin.prezzo}€</span>` : ''}</div>
                   <div class="item-content">${fin.descrizione || ''}</div>
-                  ${fin.questions && fin.questions.length > 0 ? `<div class="item-questions"><small>Domande: ${fin.questions.join(', ')}</small></div>` : ''}
+                  ${fin.domande && fin.domande.length > 0 ? `<div class="item-questions"><small>Domande: ${fin.domande.join(', ')}</small></div>` : ''}
                 </div>
               `).join('')}
             </div>
@@ -774,7 +774,6 @@
     // Gestione del submit del form di aggiunta
     document.getElementById('addForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-      
       const formData = new FormData(this);
       const tipo = formData.get('tipo');
       const data = {
@@ -798,11 +797,10 @@
           categorie.push({
             titolo: titoli[i],
             descrizione: descrizioni[i],
-            questions: domande[i].split(',').map(d => d.trim()).filter(d => d)
+            domande: domande[i].split(',').map(d => d.trim()).filter(d => d)
           });
         }
         data.categorie = categorie;
-        data.categorie_domande = formData.get('domande').split(',').map(d => d.trim()).filter(d => d);
       }
       // Gestione finiture
       if (tipo === "complemento d'arredo") {
@@ -816,11 +814,10 @@
             titolo: titoli[i],
             descrizione: descrizioni[i],
             prezzo: prezzi[i],
-            questions: domande[i].split(',').map(d => d.trim()).filter(d => d)
+            domande: domande[i].split(',').map(d => d.trim()).filter(d => d)
           });
         }
         data.finiture = finiture;
-        data.finiture_domande = formData.get('domande').split(',').map(d => d.trim()).filter(d => d);
       }
       try {
         const response = await fetch('/api/knowledge', {
@@ -867,13 +864,13 @@
         editCategorieSection.style.display = 'block';
         editFinitureSection.style.display = 'none';
         (record.categorie || []).forEach(cat => {
-  const div = document.createElement('div');
+          const div = document.createElement('div');
           div.className = 'item';
-  div.innerHTML = `
+          div.innerHTML = `
             <div class="form-group">
               <input type="text" name="edit_categoria_titolo[]" class="form-control" placeholder="Titolo" required value="${cat.titolo || ''}">
               <textarea name="edit_categoria_descrizione[]" class="form-control" placeholder="Descrizione">${cat.descrizione || ''}</textarea>
-              <textarea name="edit_categoria_domande[]" class="form-control" placeholder="Domande (separate da virgola)">${(cat.questions || []).join(', ')}</textarea>
+              <textarea name="edit_categoria_domande[]" class="form-control" placeholder="Domande (separate da virgola)">${(cat.domande || []).join(', ')}</textarea>
               <button type="button" class="btn btn-danger" onclick="this.parentElement.parentElement.remove()">Rimuovi</button>
             </div>
           `;
@@ -883,14 +880,14 @@
         editCategorieSection.style.display = 'none';
         editFinitureSection.style.display = 'block';
         (record.finiture || []).forEach(fin => {
-  const div = document.createElement('div');
+          const div = document.createElement('div');
           div.className = 'item';
-  div.innerHTML = `
+          div.innerHTML = `
             <div class="form-group">
               <input type="text" name="edit_finitura_titolo[]" class="form-control" placeholder="Titolo" required value="${fin.titolo || ''}">
               <textarea name="edit_finitura_descrizione[]" class="form-control" placeholder="Descrizione">${fin.descrizione || ''}</textarea>
               <input type="text" name="edit_finitura_prezzo[]" class="form-control" placeholder="Prezzo" value="${fin.prezzo || ''}">
-              <textarea name="edit_finitura_domande[]" class="form-control" placeholder="Domande (separate da virgola)">${(fin.questions || []).join(', ')}</textarea>
+              <textarea name="edit_finitura_domande[]" class="form-control" placeholder="Domande (separate da virgola)">${(fin.domande || []).join(', ')}</textarea>
               <button type="button" class="btn btn-danger" onclick="this.parentElement.parentElement.remove()">Rimuovi</button>
             </div>
           `;
@@ -924,23 +921,23 @@
     }
     function addEditCategoria() {
       const container = document.getElementById('editCategorieContainer');
-  const div = document.createElement('div');
+      const div = document.createElement('div');
       div.className = 'item';
-  div.innerHTML = `
+      div.innerHTML = `
         <div class="form-group">
           <input type="text" name="edit_categoria_titolo[]" class="form-control" placeholder="Titolo" required>
           <textarea name="edit_categoria_descrizione[]" class="form-control" placeholder="Descrizione"></textarea>
           <textarea name="edit_categoria_domande[]" class="form-control" placeholder="Domande (separate da virgola)"></textarea>
           <button type="button" class="btn btn-danger" onclick="this.parentElement.parentElement.remove()">Rimuovi</button>
         </div>
-  `;
-  container.appendChild(div);
-}
+      `;
+      container.appendChild(div);
+    }
     function addEditFinitura() {
       const container = document.getElementById('editFinitureContainer');
-  const div = document.createElement('div');
+      const div = document.createElement('div');
       div.className = 'item';
-  div.innerHTML = `
+      div.innerHTML = `
         <div class="form-group">
           <input type="text" name="edit_finitura_titolo[]" class="form-control" placeholder="Titolo" required>
           <textarea name="edit_finitura_descrizione[]" class="form-control" placeholder="Descrizione"></textarea>
@@ -948,9 +945,9 @@
           <textarea name="edit_finitura_domande[]" class="form-control" placeholder="Domande (separate da virgola)"></textarea>
           <button type="button" class="btn btn-danger" onclick="this.parentElement.parentElement.remove()">Rimuovi</button>
         </div>
-  `;
-  container.appendChild(div);
-}
+      `;
+      container.appendChild(div);
+    }
     document.getElementById('editForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const formData = new FormData(this);
@@ -977,11 +974,10 @@
           categorie.push({
             titolo: titoli[i],
             descrizione: descrizioni[i],
-            questions: domande[i].split(',').map(d => d.trim()).filter(d => d)
+            domande: domande[i].split(',').map(d => d.trim()).filter(d => d)
           });
         }
         data.categorie = categorie;
-        data.categorie_domande = formData.get('domande').split(',').map(d => d.trim()).filter(d => d);
       }
       // Gestione finiture
       if (tipo === "complemento d'arredo") {
@@ -995,11 +991,10 @@
             titolo: titoli[i],
             descrizione: descrizioni[i],
             prezzo: prezzi[i],
-            questions: domande[i].split(',').map(d => d.trim()).filter(d => d)
+            domande: domande[i].split(',').map(d => d.trim()).filter(d => d)
           });
         }
         data.finiture = finiture;
-        data.finiture_domande = formData.get('domande').split(',').map(d => d.trim()).filter(d => d);
       }
       try {
         const response = await fetch(`/api/knowledge/${id}`, {
@@ -1074,6 +1069,6 @@
       loadKB();
       document.getElementById('addRecordBtn').onclick = openAddModal;
     };
-</script>
+  </script>
 </body>
 </html>
