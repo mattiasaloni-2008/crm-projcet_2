@@ -56,4 +56,4 @@ async function createBackup() {
 // Rimuovi o commenta la riga:
 // createBackup(); 
 
- 
+createBackup(); 
