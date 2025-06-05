@@ -330,8 +330,6 @@ app.get('/api/chatbot/knowledge/search', verifyChatbotApiKey, async (req, res) =
             const domande_finali = safeParseJSON(row.domande_finali);
             const categorie = safeParseJSON(row.categorie);
             const finiture = safeParseJSON(row.finiture);
-            const categorie_domande = safeParseJSON(row.categorie_domande);
-            const finiture_domande = safeParseJSON(row.finiture_domande);
             const productDetails = {
                 id: row.id,
                 tipo: sanitizeString(row.tipo),
@@ -342,16 +340,15 @@ app.get('/api/chatbot/knowledge/search', verifyChatbotApiKey, async (req, res) =
                 domande: domande.map(d => sanitizeString(d)).join('/'),
                 domande_finali: domande_finali.map(d => sanitizeString(d)).join('/')
             };
-            if (row.tipo === 'arredo' && categorie) {
-                productDetails.categorie = categorie
-                    .map(c => `${sanitizeString(c.titolo)}:${sanitizeString(c.descrizione)}`)
-                    .join('/');
-                productDetails.categorie_domande = categorie_domande.map(d => sanitizeString(d)).join('/');
-            } else if (row.tipo === "complemento d'arredo" && finiture) {
-                productDetails.finiture = finiture
-                    .map(f => `${sanitizeString(f.titolo)}:${sanitizeString(f.descrizione)}:${sanitizeString(f.prezzo)}`)
-                    .join('/');
-                productDetails.finiture_domande = finiture_domande.map(d => sanitizeString(d)).join('/');
+            // Aggiungi dettagli categorie/finiture con domande
+            if (row.tipo === 'arredo' && Array.isArray(categorie)) {
+                productDetails.categorie_dettaglio = categorie.map(c => {
+                    return `${sanitizeString(c.titolo)}:${sanitizeString(c.descrizione)}:${Array.isArray(c.domande) ? c.domande.map(d => sanitizeString(d)).join(',') : ''}`;
+                }).join('/');
+            } else if (row.tipo === "complemento d'arredo" && Array.isArray(finiture)) {
+                productDetails.finiture_dettaglio = finiture.map(f => {
+                    return `${sanitizeString(f.titolo)}:${sanitizeString(f.descrizione)}:${sanitizeString(f.prezzo)}:${Array.isArray(f.domande) ? f.domande.map(d => sanitizeString(d)).join(',') : ''}`;
+                }).join('/');
             }
             const parts = [];
             for (const [key, value] of Object.entries(productDetails)) {
