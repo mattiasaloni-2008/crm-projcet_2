@@ -699,9 +699,13 @@
     function openAddModal() {
       document.getElementById('addModal').style.display = 'block';
       document.getElementById('addForm').reset();
-      document.getElementById('categorieSection').style.display = 'none';
-      document.getElementById('finitureSection').style.display = 'none';
-      hideShowPrezzoConsegnaAdd('arredo'); // default
+      const tipoSelect = document.querySelector('#addForm select[name="tipo"]');
+      const tipo = tipoSelect.value;
+      document.getElementById('categorieSection').style.display = (tipo === 'arredo') ? 'block' : 'none';
+      document.getElementById('finitureSection').style.display = (tipo === "complemento d'arredo") ? 'block' : 'none';
+      document.getElementById('categorieContainer').innerHTML = '';
+      document.getElementById('finitureContainer').innerHTML = '';
+      hideShowPrezzoConsegnaAdd(tipo);
     }
     // Funzione per aggiungere una categoria
     function addCategoria() {
