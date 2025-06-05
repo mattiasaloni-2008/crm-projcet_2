@@ -474,19 +474,17 @@ app.get('/api/knowledge', async (_, res) => {
     try {
         const result = await query('SELECT * FROM knowledge', []);
         const rows = result.rows;
-    rows.forEach(r => {
-        r.domande = safeParseJSON(r.domande);
+        rows.forEach(r => {
+            r.domande = safeParseJSON(r.domande);
             r.domande_finali = safeParseJSON(r.domande_finali);
-        if (r.tipo === 'arredo') {
-            r.categorie = safeParseJSON(r.categorie);
-            r.categorie_domande = safeParseJSON(r.categorie_domande);
-        }
-        if (r.tipo === "complemento d'arredo") {
-            r.finiture = safeParseJSON(r.finiture);
-            r.finiture_domande = safeParseJSON(r.finiture_domande);
-        }
-    });
-    res.json(rows);
+            if (r.tipo === 'arredo') {
+                r.categorie = safeParseJSON(r.categorie);
+            }
+            if (r.tipo === "complemento d'arredo") {
+                r.finiture = safeParseJSON(r.finiture);
+            }
+        });
+        res.json(rows);
     } catch (err) {
         console.error('Errore recupero knowledge:', err);
         res.status(500).json({ error: 'Errore interno' });
@@ -498,32 +496,28 @@ app.post('/api/knowledge', async (req, res) => {
   const { tipo, nome, descrizione } = req.body;
   if (!tipo || !nome)
     return res.status(400).json({ error: 'Campi obbligatori mancanti' });
-    let prezzo = '', consegna = '', domande = '', categorie = '', finiture = '', categorie_domande = '', finiture_domande = '', domande_finali = '';
+  let prezzo = '', consegna = '', domande = '', categorie = '', finiture = '', domande_finali = '';
   try {
     if (tipo === 'arredo') {
       categorie = JSON.stringify(req.body.categorie || []);
-      categorie_domande = JSON.stringify(req.body.categorie_domande || []);
     } else {
       categorie = JSON.stringify([]);
-      categorie_domande = JSON.stringify([]);
     }
     if (tipo === "complemento d'arredo") {
       finiture = JSON.stringify(req.body.finiture || []);
-      finiture_domande = JSON.stringify(req.body.finiture_domande || []);
     } else {
       finiture = JSON.stringify([]);
-      finiture_domande = JSON.stringify([]);
     }
     prezzo = req.body.prezzo || '';
     consegna = req.body.consegna || '';
     domande = JSON.stringify(req.body.domande || []);
-        domande_finali = JSON.stringify(req.body.domande_finali || []);
-        const result = await query(
-            `INSERT INTO knowledge (tipo, nome, prezzo, consegna, descrizione, domande, categorie, finiture, categorie_domande, finiture_domande, domande_finali)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
-            [tipo, nome, prezzo, consegna, descrizione || '', domande, categorie, finiture, categorie_domande, finiture_domande, domande_finali]
-        );
-        const newRecord = result.rows[0];
+    domande_finali = JSON.stringify(req.body.domande_finali || []);
+    const result = await query(
+      `INSERT INTO knowledge (tipo, nome, prezzo, consegna, descrizione, domande, categorie, finiture, domande_finali)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [tipo, nome, prezzo, consegna, descrizione || '', domande, categorie, finiture, domande_finali]
+    );
+    const newRecord = result.rows[0];
     res.json(newRecord);
   } catch (err) {
     console.error('Errore POST /api/knowledge:', err);
@@ -536,32 +530,28 @@ app.put('/api/knowledge/:id', async (req, res) => {
   const { tipo, nome, descrizione } = req.body;
   if (!tipo || !nome)
     return res.status(400).json({ error: 'Campi obbligatori mancanti' });
-    let prezzo = '', consegna = '', domande = '', categorie = '', finiture = '', categorie_domande = '', finiture_domande = '', domande_finali = '';
+  let prezzo = '', consegna = '', domande = '', categorie = '', finiture = '', domande_finali = '';
   try {
     if (tipo === 'arredo') {
       categorie = JSON.stringify(req.body.categorie || []);
-      categorie_domande = JSON.stringify(req.body.categorie_domande || []);
     } else {
       categorie = JSON.stringify([]);
-      categorie_domande = JSON.stringify([]);
     }
     if (tipo === "complemento d'arredo") {
       finiture = JSON.stringify(req.body.finiture || []);
-      finiture_domande = JSON.stringify(req.body.finiture_domande || []);
     } else {
       finiture = JSON.stringify([]);
-      finiture_domande = JSON.stringify([]);
     }
     prezzo = req.body.prezzo || '';
     consegna = req.body.consegna || '';
     domande = JSON.stringify(req.body.domande || []);
-        domande_finali = JSON.stringify(req.body.domande_finali || []);
-        const result = await query(
-            `UPDATE knowledge SET tipo = $1, nome = $2, prezzo = $3, consegna = $4, descrizione = $5, domande = $6, categorie = $7, finiture = $8, categorie_domande = $9, finiture_domande = $10, domande_finali = $11 WHERE id = $12 RETURNING *`,
-            [tipo, nome, prezzo, consegna, descrizione || '', domande, categorie, finiture, categorie_domande, finiture_domande, domande_finali, req.params.id]
-        );
-        const updated = result.rows[0];
-        if (!updated) {
+    domande_finali = JSON.stringify(req.body.domande_finali || []);
+    const result = await query(
+      `UPDATE knowledge SET tipo = $1, nome = $2, prezzo = $3, consegna = $4, descrizione = $5, domande = $6, categorie = $7, finiture = $8, domande_finali = $9 WHERE id = $10 RETURNING *`,
+      [tipo, nome, prezzo, consegna, descrizione || '', domande, categorie, finiture, domande_finali, req.params.id]
+    );
+    const updated = result.rows[0];
+    if (!updated) {
       res.status(404).json({ error: 'Record knowledge non trovato' });
     } else {
       res.json(updated);
