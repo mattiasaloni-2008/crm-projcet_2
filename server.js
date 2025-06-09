@@ -24,8 +24,10 @@ app.use((err, req, res, next) => {
 app.use(cookieParser());
 
 // Configurazione CORS
+const allowedOriginsEnv = process.env.CORS_ORIGINS;
+const allowedOrigins = allowedOriginsEnv ? allowedOriginsEnv.split(',').map(o => o.trim()) : '*';
 app.use(cors({
-    origin: '*',
+    origin: allowedOrigins,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'X-API-KEY'],
     exposedHeaders: ['*', 'Authorization']
@@ -39,16 +41,20 @@ app.post('/api/login', async (req, res) => {
     const token = jwt.sign({ role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '30d' });
   res.cookie('crmToken', token, {
     httpOnly: true,
-        secure: false,
-        sameSite: 'Lax',
-        path: '/',
-        maxAge: 30 * 24 * 60 * 60 * 1000
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Lax',
+    path: '/',
+    maxAge: 30 * 24 * 60 * 60 * 1000
   }).sendStatus(204);
 });
 
 // Logout route
 app.post('/api/logout', (req, res) => {
-    res.clearCookie('crmToken').sendStatus(204);
+    res.clearCookie('crmToken', {
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Lax'
+    }).sendStatus(204);
 });
 
 /* ---------- MIDDLEWARE ---------- */
