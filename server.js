@@ -591,6 +591,10 @@ app.delete('/api/knowledge/:id', async (req, res) => {
     }
 });
 
-app.listen(port, () => {
-  console.log(`Server avviato su http://localhost:${port}`);
-});
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`Server avviato su http://localhost:${port}`);
+  });
+} else {
+  module.exports = app;
+}
