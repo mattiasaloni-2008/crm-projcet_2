@@ -118,6 +118,10 @@ app.use("/api", chatbotRoutes(query));
 app.use("/api", clientRoutes(query));
 app.use("/api", knowledgeRoutes(query));
 
-app.listen(port, () => {
-  console.log(`Server avviato su http://localhost:${port}`);
-});
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`Server avviato su http://localhost:${port}`);
+  });
+} else {
+  module.exports = app;
+}
