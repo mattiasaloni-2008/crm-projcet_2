@@ -8,6 +8,10 @@ const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const { Pool } = require('pg');
 
+const clientRoutes = require('./routes/clients');
+const knowledgeRoutes = require('./routes/knowledge');
+const chatbotRoutes = require('./routes/chatbot');
+
 /* ---------- APP ---------- */
 const app = express();
 const port = process.env.PORT || 3000;
@@ -116,68 +120,16 @@ async function query(text, params) {
     }
 }
 
-/* ---------- CHATBOT API ROUTES ---------- */
-// Middleware per verificare l'API key del chatbot
-const verifyChatbotApiKey = (req, res, next) => {
-    const apiKey = req.headers['x-api-key'] || req.headers['X-API-KEY'];
-    if (!apiKey || apiKey !== process.env.CHATBOT_API_KEY) {
-        return res.status(401).json({ error: 'API key non valida o mancante' });
-    }
-    next();
-};
+app.use("/api", chatbotRoutes(query));
+app.use("/api", clientRoutes(query));
+app.use("/api", knowledgeRoutes(query));
 
-// Helper per formattare le risposte in formato Voiceflow
-function formatVoiceflowResponse(type, data) {
-  const parts = [];
-  for (const [key, value] of Object.entries(data)) {
-    if (Array.isArray(value)) {
-      parts.push(`${key}:${value.join('/')}`);
-    } else if (typeof value === 'object' && value !== null) {
-      const objParts = [];
-      for (const [k, v] of Object.entries(value)) {
-        objParts.push(`${k}:${v}`);
-      }
-      parts.push(`${key}:${objParts.join('/')}`);
-    } else {
-      parts.push(`${key}:${value}`);
-    }
-  }
-  return `${type}|${parts.join('|')}`;
-}
-
-// Get client by Voiceflow ID
-app.get('/api/chatbot/client/:id_voiceflow', verifyChatbotApiKey, async (req, res) => {
-    try {
-        const id_voiceflow = req.params.id_voiceflow.replace(/[{}]/g, '');
-        const result = await query('SELECT * FROM clients WHERE id_voiceflow = $1', [id_voiceflow]);
-        const client = result.rows[0];
-        if (!client) {
-      return res.status(404).json({ result: 'CLIENTE_NON_TROVATO' });
-        }
-        client.conversazioni = client.conversazioni || [];
-    const response = formatVoiceflowResponse('CLIENTE_TROVATO', {
-      id: client.id,
-      nome: client.nome || '',
-      numero: client.numero || '',
-      summary: client.summary || '',
-      data: client.data_modifica,
-      messaggio: `Cliente trovato: ${client.nome || ''} (${client.numero || 'N/A'})${client.summary ? ' - ' + client.summary : ''}`
-    });
-    res.json({ result: response });
-    } catch (error) {
-        console.error('Errore nel recupero del cliente:', error);
-    res.status(500).json({ result: 'ERRORE_INTERNO' });
-    }
-});
-
-// Helper per sanitizzare le stringhe
-function sanitizeString(str) {
-    if (!str) return '';
-    return String(str)
-        .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // Rimuove caratteri di controllo
-        .replace(/[{}]/g, '') // Rimuove le parentesi graffe
-        .replace(/^["']|["']$/g, '') // Rimuove doppi apici all'inizio e alla fine
-        .trim();
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`Server avviato su http://localhost:${port}`);
+  });
+} else {
+  module.exports = app;
 }
 
 // Create or update client from chatbot
